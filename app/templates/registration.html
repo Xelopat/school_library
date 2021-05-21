@@ -1,0 +1,36 @@
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}"/>
+    <title>Регистрация</title>
+</head>
+<body><br>
+<div>
+    <div style="float:left;">
+        <a class=button href="/">Назад</a>
+    </div>
+    <div style="float:right;">
+        <a class=button href="login">Вход</a>
+    </div>
+    <div class="clear"></div>
+</div>
+<form method="POST" style="margin-top:150px;">
+    <div class=form>
+        <p>Почта: </p><input type="text" placeholder="qwerty@uiop.ru" name="email" required autocomplete="nope">
+        <p>Имя, фамилия: </p><input type="text" placeholder="Иван Иванов" name="my_name" required autocomplete="nope">
+        <p>Пароль: </p><input type="password" placeholder="password" name="password" required>
+        <p>Повторите пароль: </p><input type="password" placeholder="password" name="password_1" required>
+        <p>Выберить свой класс:</p>
+        <select name="id_class" style="width: 100px;font-size:18px;">
+            {% for current_class in classes %}
+            <option value="{{ current_class[0] }}">{{ current_class[1] + current_class[2] }}</option>
+            {% endfor %}
+        </select><br>
+        <p>Я админ:</p><input type="checkbox" name="is_admin"
+                              onchange="if(this.checked)alert('После регистрации ожидайте подтверждения от другого админа');"
+                              style="width:20px;height: 20px;">
+        <button type="submit">Регистрация</button>
+        <br>
+    </div>
+</form>
+</body>
+</html>

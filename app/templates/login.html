@@ -1,0 +1,24 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}"/>
+		<title>Вход</title>
+	</head>
+	<body><br/>
+		<div>
+			<div style="float:left;">
+				<a class=button  href="/">Назад</a>
+			</div>
+			<div style="float:right;">
+				<a class=button  href="registration">Регистрация</a>
+			</div>
+			<div class="clear"></div>
+		</div>
+		<form method="POST" style="margin-top:150px;">
+			<div class=form>
+				<p>Логин: </p><input type="email" placeholder="qwerty@uiop.ru" name="email" required>
+				<p>Пароль: </p><input type="password" placeholder="password" name="password" required>
+				<button type="submit">Вход</button><p></p>
+			</div>
+		</form>
+	</body>
+</html>

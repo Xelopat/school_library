@@ -1,0 +1,62 @@
+.clear {clear: both;}
+.button {
+  position: relative;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+  user-select: none;
+  padding: .8em 2em;
+  outline: none;
+  border-radius: 1px;
+  background: linear-gradient(to left, rgba(0,0,0,.3), rgba(0,0,0,.0) 50%, rgba(0,0,0,.3)), linear-gradient(#d77d31, #fe8417, #d77d31);
+  background-size: 100% 100%, auto;
+  background-position: 50% 50%;
+  box-shadow: inset #ebab00 0 -1px 1px, inset 0 1px 1px #ffbf00, #cc7722 0 0 0 1px, #000 0 10px 15px -10px;
+  transition: 0.2s;
+}
+.button:hover {
+  background-size: 140% 100%, auto;
+}
+.button:active {
+  top: 1px;
+  color: #ffdead;
+  box-shadow: inset #ebab00 0 -1px 1px, inset 0 1px 1px #ffbf00, #cc7722 0 0 0 1px, 0 10px 10px -9px #000;
+}
+
+.form{
+	width:400px;
+	margin: auto;
+}
+.form input, .contact_form form{
+	border-radius: 8px;
+	border-width: 1px;
+	width:400px;
+	font-size:18px;
+	padding: 8px;
+	margin: 10px;
+}
+.form p, .contact_form form{
+	display: inline;
+	font-size:20px;
+	text-align:center;
+}
+
+.form button, .contact_form form{
+	width:400px;
+	margin: 10px;
+	border-radius: 10px;
+	background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+.form a, .contact_form form{
+	text-align: center;
+    display: inline-block;
+    font-size: 16px;
+	color: black;
+}

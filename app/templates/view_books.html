@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Список книг</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+<div>
+    <br/>
+    <div style="float:right;">
+        {% if name == "" %}
+        <div>
+            <a class=button href="login">Вход</a>
+            <a class=button href="registration">Регистрация</a>
+        </div>
+        {% else %}
+        <div>
+            <a class=button href="profile">{{ name }}</a>
+            <a class=button href="logout">Выход</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<div style="margin:0 auto; width: 60%; text-align: center;">
+    <input list="class-list" value="{{ books[0][0] }}" onchange="reload(this.value)" id="current_class">
+    <datalist id="class-list">
+        {% for current in all_classes %}
+        <option id="{{ current[0] }}" value="{{ current[1] }}">
+            {% endfor %}
+    </datalist>
+    <table cellspacing="15" align="center">
+        {% for current in books %}
+        <tr>
+            <td>{{ current[0] }}</td>
+            <td> {{ current[1] }}</td>
+            <td> {{ current[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+</body>
+</html>
+<script>
+    function reload(val){
+        let current = document.getElementById("class-list").options;
+        for (let i = 0; i < current.length; i++) {
+            if(val == current[i].value){
+                location = "view_books?selected_class=" + current[i].id;
+                return 0;
+            }
+        }
+        alert("Данного класса нет в базе");
+    }
+
+</script>
