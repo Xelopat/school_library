@@ -115,5 +115,5 @@ def decode():
     dec = base64.b64decode(img)
     barcode = zbar.decode(Image.open(BytesIO(dec)))
     if len(barcode) > 0:
-        return str(barcode[0].data)
+        return str(barcode[0].data)[2:-1]
     return "false"

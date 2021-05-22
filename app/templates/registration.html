@@ -13,14 +13,14 @@
     </div>
     <div class="clear"></div>
 </div>
-<form method="POST" style="margin-top:150px;">
+<form method="POST">
     <div class=form>
         <p>Почта: </p><input type="text" placeholder="qwerty@uiop.ru" name="email" required autocomplete="nope">
         <p>Имя, фамилия: </p><input type="text" placeholder="Иван Иванов" name="my_name" required autocomplete="nope">
         <p>Пароль: </p><input type="password" placeholder="password" name="password" required>
         <p>Повторите пароль: </p><input type="password" placeholder="password" name="password_1" required>
         <p>Выберить свой класс:</p>
-        <input list="class-list" onclick="this.value=''" name="id_class">
+        <input list="class-list" onclick="this.value=''" name="id_class" required>
         <datalist id="class-list">
             {% for current_class in classes %}
             <option id="{{ current_class[0] }}">{{ current_class[1] + current_class[2] }}</option>
@@ -28,16 +28,16 @@
         </datalist>
         <br/>
         <p>Выберить свою школу:</p>
-        <input list="school-list" onclick="this.value=''" name="id_school">
+        <input list="school-list" onclick="this.value=''" name="id_school" required>
         <datalist id="school-list">
             {% for current_school in schools %}
             <option>{{ current_school[1] }}</option>
             {% endfor %}
         </datalist>
         <br/>
-        <p>Я админ:</p><input type="checkbox" name="is_admin"
+        <p style="display: inline-block;">Я админ:</p><input type="checkbox" name="is_admin"
                               onchange="if(this.checked)alert('После регистрации ожидайте подтверждения от другого админа');"
-                              style="width:20px;height: 20px;">
+                              style="width:30px;height: 30px;">
         <button type="submit">Регистрация</button>
         <br>
     </div>
