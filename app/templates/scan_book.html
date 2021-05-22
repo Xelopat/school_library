@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -20,15 +19,21 @@
     let canvas = document.getElementById('canvas');
     let context = canvas.getContext('2d');
 
-    function send() {
+    async function send() {
         context.drawImage(video, 0, 0, 640, 480);
         let path = canvas.toDataURL('image/jpeg', 0.3);
-        console.log(path);
-        let request = new XMLHttpRequest();
-        request.open('POST', 'decode?image=' + path, true);
-        request.send();
-		console.log(request.responseText);
+        let formData = new FormData();
+
+        formData.append('image', path);
+		let request = await fetch('decode', {
+			method: 'POST',
+			body: formData
+        });
+        let text = await request.text();
+        if(text != "false"){
+            alert(text);
+        }
     }
-    setTimeout(send, 1000);
+    setInterval(send, 1000);
 </script>
 </html>

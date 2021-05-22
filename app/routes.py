@@ -108,13 +108,12 @@ def scan_book():
     return render_template('scan_book.html')
 
 
-@app.route('/decode')
+@app.route('/decode', methods=['POST'])
 def decode():
-    img = request.args.get('image')
+    img = request.form['image']
     img = img[img.find(",") + 1:].replace(" ", "+")
     dec = base64.b64decode(img)
     barcode = zbar.decode(Image.open(BytesIO(dec)))
     if len(barcode) > 0:
         return str(barcode[0].data)
-    else:
-        return "false"
+    return "false"
