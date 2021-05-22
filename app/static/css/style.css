@@ -90,6 +90,9 @@
 }
 @media (min-width: 768px) {
     .clear {clear: both;}
+    .text_size{
+        font-size: 70px;
+    }
     .button {
       position: relative;
       font-weight: bold;
@@ -180,6 +183,9 @@
 }
 @media (min-width: 992px) {
     .clear {clear: both;}
+    .text_size{
+        font-size: 40px;
+    }
     .button {
       position: relative;
       font-weight: bold;

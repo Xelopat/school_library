@@ -32,13 +32,19 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
 
-class Books(db.Model):
-    __tablename__ = 'books'
+class Info_about_books(db.Model):
+    __tablename__ = 'info_about_books'
 
-    id_book = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_all_books = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_subject = db.Column(db.Integer, nullable=True)
     num_class = db.Column(db.Integer, nullable=True)
-    created_date = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class All_books(db.Model):
+    __tablename__ = 'all_books'
+
+    id_all_books = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_book = db.Column(db.Integer, nullable=True)
 
 
 class User_books(db.Model):

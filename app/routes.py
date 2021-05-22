@@ -1,13 +1,16 @@
 import base64
+import io
 from io import BytesIO
 
+import qrcode
 from PIL import Image
 from flask import render_template, redirect, request, url_for, flash, jsonify
 import pyzbar.pyzbar as zbar
 
 from app import app, db
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User, Books, User_books, Classes, Subjects, Authors, Book_authors, Class_books, Schools
+from app.models import User, All_books, User_books, Classes, Subjects, Authors, Book_authors, Class_books, Schools, \
+    Info_about_books
 
 
 @app.route('/')
@@ -93,19 +96,22 @@ def view_books():
     book_class = Classes.query.filter_by(id_class=id_class).first()
     book_class = str(book_class.num) + book_class.letter
     for current in my_class_books.all():
-        book = Books.query.filter_by(id_book=current.id_book).first()
+        book = Info_about_books.query.filter_by(id_all_books=current.id_book).first()
         authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
                             [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
         subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
         books.append([book_class, authors, subject])
     if not books:
-        books = [[book_class, "None", "None"]]
+        books = [[book_class, "книг", "нет"]]
     return render_template('view_books.html', books=books, all_classes=all_classes, name=name)
 
 
 @app.route('/scan_book')
 def scan_book():
-    return render_template('scan_book.html')
+    is_admin = 0
+    if current_user.is_authenticated:
+        is_admin = current_user.is_admin
+    return render_template('scan_book.html', is_admin=0)
 
 
 @app.route('/decode', methods=['POST'])
@@ -115,5 +121,24 @@ def decode():
     dec = base64.b64decode(img)
     barcode = zbar.decode(Image.open(BytesIO(dec)))
     if len(barcode) > 0:
-        return str(barcode[0].data)[2:-1]
-    return "false"
+        message = str(barcode[0].data)[2:-1]
+        id_book = All_books.query.filter_by(id_all_books=message).first().id_book
+        info_book = Info_about_books.query.filter_by(id_all_books=id_book).first()
+        if id_book:
+            authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
+                                [i.id_author for i in
+                                 Book_authors.query.filter_by(id_book=info_book.id_all_books).all()]])
+            subject = Subjects.query.filter_by(id_subject=info_book.id_subject).first().name
+            id_user = User_books.query.filter_by(id_book=message).first()
+            if id_user:
+                id_user = id_user.id_user
+                user = User.query.filter_by(id_user=id_user).first()
+                username = user.name
+                book_class = Classes.query.filter_by(id_class=user.id_class).first()
+                my_class = str(book_class.num) + book_class.letter
+                return jsonify({"code": "yes", "id_book": message.zfill(13), "username": username, "subject": subject,
+                                "authors": authors, "my_class": my_class})
+            else:
+                return jsonify({"code": "no_user", "subject": subject, "authors": authors})
+        return jsonify({"code": "no", "id_book": message.zfill(13)})
+    return jsonify({"code": "no"})
