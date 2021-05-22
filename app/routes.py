@@ -2,7 +2,7 @@ from flask import render_template, redirect, request, url_for, flash
 
 from app import app, db
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User, Books, User_books, Classes, Subjects, Authors, Book_authors, Class_books
+from app.models import User, Books, User_books, Classes, Subjects, Authors, Book_authors, Class_books, Schools
 
 
 @app.route('/')
@@ -32,6 +32,8 @@ def login():
 
 @app.route('/registration', methods=['GET', 'POST'])
 def registration():
+    classes = [[i.id_class, str(i.num), i.letter] for i in Classes.query.all()]
+    schools = [[i.id_school, i.name] for i in Schools.query.all()]
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     if request.method == 'POST':
@@ -42,15 +44,23 @@ def registration():
             is_admin = 0
             if "is_admin" in request.form and request.form['is_admin'] == "on":
                 is_admin = -1
+            all_classes = [[i.id_class, "".join([str(i.num), i.letter])] for i in Classes.query.all()]
+            id_class = 0
+            for i in all_classes:
+                if i[1] == request.form['id_class']:
+                    id_class = i[0]
+            id_school = 0
+            for i in schools:
+                if i[1] == request.form['id_school']:
+                    id_school = i[0]
             user = User(email=request.form['email'], is_admin=is_admin,
-                        name=request.form['my_name'], id_class=request.form['id_class'])
+                        name=request.form['my_name'], id_class=id_class, id_school=id_school)
             user.set_password(request.form['password'])
             db.session.add(user)
             db.session.commit()
             login_user(User.query.filter_by(email=request.form['email']).first(), remember=True)
             return redirect(url_for('index'))
-    classes = [[i.id_class, str(i.num), i.letter] for i in Classes.query.all()]
-    return render_template('registration.html', classes=classes)
+    return render_template('registration.html', classes=classes, schools=schools)
 
 
 @app.route('/logout')

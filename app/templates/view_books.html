@@ -23,7 +23,7 @@
     </div>
 </div>
 <div style="margin:0 auto; width: 60%; text-align: center;">
-    <input list="class-list" value="{{ books[0][0] }}" onchange="reload(this.value)" id="current_class">
+    <input list="class-list" value="{{ books[0][0] }}" onclick="this.value=''" onchange="reload(this.value)" id="current_class">
     <datalist id="class-list">
         {% for current in all_classes %}
         <option id="{{ current[0] }}" value="{{ current[1] }}">
