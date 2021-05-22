@@ -1,4 +1,9 @@
-from flask import render_template, redirect, request, url_for, flash
+import base64
+from io import BytesIO
+
+from PIL import Image
+from flask import render_template, redirect, request, url_for, flash, jsonify
+import pyzbar.pyzbar as zbar
 
 from app import app, db
 from flask_login import current_user, login_user, logout_user, login_required
@@ -96,3 +101,20 @@ def view_books():
     if not books:
         books = [[book_class, "None", "None"]]
     return render_template('view_books.html', books=books, all_classes=all_classes, name=name)
+
+
+@app.route('/scan_book')
+def scan_book():
+    return render_template('scan_book.html')
+
+
+@app.route('/decode')
+def decode():
+    img = request.args.get('image')
+    img = img[img.find(",") + 1:].replace(" ", "+")
+    dec = base64.b64decode(img)
+    barcode = zbar.decode(Image.open(BytesIO(dec)))
+    if len(barcode) > 0:
+        return str(barcode[0].data)
+    else:
+        return "false"
