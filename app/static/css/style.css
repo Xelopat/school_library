@@ -34,6 +34,15 @@
     	padding: 8px;
     	margin: 10px;
     }
+    .input_size_1{
+        border-radius: 8px;
+    	border-width: 1px;
+    	height: 5%;
+    	margin-top: 13%;
+    	font-size:35px;
+    	padding: 8px;
+    	margin: 10px;
+    }
     .table{
         margin:0 auto;
         border: 1px solid black;
@@ -155,7 +164,7 @@
     }
     .form p, .contact_form form{
     	font-size:40px;
-    	text-align:left;
+    	text-align:center;
     }
 
     .form button, .contact_form form{
@@ -215,7 +224,7 @@
         border-radius: 8px;
     	border-width: 1px;
     	height: 5%;
-    	font-size:35px;
+    	font-size:20px;
     	 margin-top: 5%
     	padding: 8px;
     	margin: 10px;

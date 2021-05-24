@@ -22,9 +22,9 @@
     <canvas id="canvas" width="400" height="300" style="display: none"></canvas>
     <video id="video" width="100%" height="50%" autoplay></video>
     <form method="post" id="my_form">
-        <input  placeholder="Предмет" class="text-size_1"/><input placeholder="Автор" class="text-size_1" />
-        <input placeholder="Класс" class="text-size_1" /><a style="color: blue; background: white;border: 1px solid black; border-radius:50%">+</a><br/><br/><br/>
-        <a class="button" onclick="document.getElementById('my_form').submit()">Добавить</a>
+        <input placeholder="Предмет" class="input_size" id="subject" name="subject" /><input placeholder="Автор1, Автор2" class="input_size" id="author" name="authors"/>
+        <input placeholder="Класс" class="input_size" id="class" name="current_class" type="number" /><input placeholder="ISBN" class="input_size" id="isbn" name="isbn" type="number" />
+        <br/><br/><br/><a class="button" onclick="document.getElementById('my_form').submit()">Добавить</a>
     </form>
 </div>
 
@@ -65,6 +65,10 @@
 			    body: formData
             });
             resp = await request.json();
+            document.getElementById("author").value = resp.authors;
+            document.getElementById("subject").value = resp.subject;
+            document.getElementById("class").value = resp.class;
+            document.getElementById("isbn").value = resp.qr;
         }
     }
 

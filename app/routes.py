@@ -121,6 +121,30 @@ def scan_book():
 
 @app.route('/scan_isbn', methods=['POST', 'GET'])
 def scan_isbn():
+    if request.method == "POST":
+        authors = request.form['authors'].replace(' ', '').split(",")
+        current_class = request.form['current_class']
+        subject = request.form['subject']
+        if not Info_about_books.query.filter_by(isbn=request.form['isbn']).first():
+            if 12 > int(current_class) > 0:
+                is_subject = Subjects.query.filter_by(name=subject).first()
+                if is_subject:
+                    for author in authors:
+                        is_author = Authors.query.filter_by(name=author).first()
+                        if not is_author:
+                            db.session.add(Authors(author))
+                else:
+                    db.session.add(Subjects(subject))
+            else:
+                return jsonify({"code": "class_error"})
+            db.session.commit()
+            db.session.add(Info_about_books(subject=Subjects.query.filter_by(name=subject).first().id_subject,
+                                            num_class=current_class, isbn=request.form['isbn']))
+            db.session.commit()
+            for author in authors:
+                db.session.add(Book_authors())
+        else:
+            return jsonify({"code": "in_base"})
     is_admin = 0
     name = ""
     if current_user.is_authenticated:
@@ -190,7 +214,8 @@ def info_isbn():
                 break
         while authors[0] != authors[0].upper() or authors[0] == " ":
             authors = authors[1:]
-        return jsonify({"code": "yes", "authors": authors, "subject": subject, "current_class": current_class})
+        return jsonify(
+            {"code": "yes", "authors": authors, "subject": subject, "class": current_class, "qr": request.form['isbn']})
     return jsonify({"code": "no"})
 
 

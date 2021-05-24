@@ -38,6 +38,7 @@ class Info_about_books(db.Model):
     id_book = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_subject = db.Column(db.Integer, nullable=True)
     num_class = db.Column(db.Integer, nullable=True)
+    isbn = db.Column(db.Integer, nullable=True)
 
 
 class All_books(db.Model):
