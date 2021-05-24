@@ -35,7 +35,7 @@ class User(UserMixin, db.Model):
 class Info_about_books(db.Model):
     __tablename__ = 'info_about_books'
 
-    id_all_books = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_book = db.Column(db.Integer, primary_key=True, autoincrement=True)
     id_subject = db.Column(db.Integer, nullable=True)
     num_class = db.Column(db.Integer, nullable=True)
 
@@ -44,15 +44,9 @@ class All_books(db.Model):
     __tablename__ = 'all_books'
 
     id_all_books = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_user = db.Column(db.Integer, default=-1)
     id_book = db.Column(db.Integer, nullable=True)
-
-
-class User_books(db.Model):
-    __tablename__ = "user_books"
-
-    id_user_book = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    id_user = db.Column(db.Integer, nullable=True)
-    id_book = db.Column(db.Integer, nullable=True)
+    qr = db.Column(db.String, nullable=True)
 
 
 class Classes(db.Model):

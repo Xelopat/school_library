@@ -28,6 +28,9 @@
         <a href="scan_book" class=button>Сканировать книгу</a><br/><br/><br/>
         <a href="view_books" class=button>Список книг</a><br/><br/><br/>
     </div>
+    {% if is_admin == 1 %}
+        <a href="scan_isbn" class=button>Сканировать книгу</a><br/><br/><br/>
+    {% endif %}
 </div>
 </body>
 </html>

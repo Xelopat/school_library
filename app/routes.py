@@ -6,22 +6,24 @@ import qrcode
 from PIL import Image
 from flask import render_template, redirect, request, url_for, flash, jsonify
 import pyzbar.pyzbar as zbar
+from selenium import webdriver
+from sqlalchemy import func
 
 from app import app, db
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User, All_books, User_books, Classes, Subjects, Authors, Book_authors, Class_books, Schools, \
+from app.models import User, All_books, Classes, Subjects, Authors, Book_authors, Class_books, Schools, \
     Info_about_books
 
 
 @app.route('/')
 def index():
+    is_admin = 0
     if current_user.is_authenticated:
         name = current_user.name
-        if current_user.is_admin == 1:
-            name = "Admin"
+        is_admin = current_user.is_admin
     else:
         name = ""
-    return render_template('index.html', name=name)
+    return render_template('index.html', name=name, is_admin=is_admin)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -82,9 +84,9 @@ def view_books():
     books = []
     if current_user.is_authenticated:
         name = current_user.name
-        if current_user.is_admin == 1:
-            name = "Admin"
         id_class = current_user.id_class
+        if id_class == 0:
+            id_class = 1
     else:
         id_class = 1
         name = ""
@@ -96,7 +98,7 @@ def view_books():
     book_class = Classes.query.filter_by(id_class=id_class).first()
     book_class = str(book_class.num) + book_class.letter
     for current in my_class_books.all():
-        book = Info_about_books.query.filter_by(id_all_books=current.id_book).first()
+        book = Info_about_books.query.filter_by(id_book=current.id_book).first()
         authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
                             [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
         subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
@@ -111,7 +113,24 @@ def scan_book():
     is_admin = 0
     if current_user.is_authenticated:
         is_admin = current_user.is_admin
-    return render_template('scan_book.html', is_admin=0)
+        name = current_user.name
+    else:
+        name = ""
+    return render_template('scan_book.html', is_admin=is_admin, name=name)
+
+
+@app.route('/scan_isbn', methods=['POST', 'GET'])
+def scan_isbn():
+    is_admin = 0
+    name = ""
+    if current_user.is_authenticated:
+        is_admin = current_user.is_admin
+        name = current_user.name
+        if is_admin != 1:
+            return redirect(url_for('index'))
+    if is_admin != 1:
+        return redirect(url_for('index'))
+    return render_template('scan_isbn.html', is_admin=is_admin, name=name)
 
 
 @app.route('/decode', methods=['POST'])
@@ -122,23 +141,89 @@ def decode():
     barcode = zbar.decode(Image.open(BytesIO(dec)))
     if len(barcode) > 0:
         message = str(barcode[0].data)[2:-1]
-        id_book = All_books.query.filter_by(id_all_books=message).first().id_book
-        info_book = Info_about_books.query.filter_by(id_all_books=id_book).first()
-        if id_book:
+        type_code = barcode[0].type
+        current_book = All_books.query.filter_by(qr=message).first()
+        if current_book:
+            id_info_book = current_book.id_book
+            info_book = Info_about_books.query.filter_by(id_book=id_info_book).first()
             authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
                                 [i.id_author for i in
-                                 Book_authors.query.filter_by(id_book=info_book.id_all_books).all()]])
+                                 Book_authors.query.filter_by(id_book=info_book.id_book).all()]])
             subject = Subjects.query.filter_by(id_subject=info_book.id_subject).first().name
-            id_user = User_books.query.filter_by(id_book=message).first()
-            if id_user:
-                id_user = id_user.id_user
+            id_user = current_book.id_user
+            if id_user != -1:
                 user = User.query.filter_by(id_user=id_user).first()
                 username = user.name
-                book_class = Classes.query.filter_by(id_class=user.id_class).first()
-                my_class = str(book_class.num) + book_class.letter
-                return jsonify({"code": "yes", "id_book": message.zfill(13), "username": username, "subject": subject,
-                                "authors": authors, "my_class": my_class})
+                my_class = "без класса"
+                if user.is_admin == 0:
+                    book_class = Classes.query.filter_by(id_class=user.id_class).first()
+                    my_class = str(book_class.num) + book_class.letter
+                return jsonify({"code": "yes", "id_book": id_info_book, "username": username, "subject": subject,
+                                "authors": authors, "my_class": my_class, "qr": message, "type": type_code})
             else:
-                return jsonify({"code": "no_user", "subject": subject, "authors": authors})
-        return jsonify({"code": "no", "id_book": message.zfill(13)})
+                return jsonify(
+                    {"code": "no_user", "subject": subject, "authors": authors, "qr": message, "id_book": id_info_book,
+                     "type": type_code})
+        return jsonify({"code": "no_book", "id_book": 0, "qr": message, "type": type_code})
+    return jsonify({"code": "no", "type": ""})
+
+
+@app.route('/info_isbn', methods=['POST'])
+def info_isbn():
+    driver = webdriver.Chrome()
+    driver.get(f"https://www.triumph.ru/html/serv/find-isbn.php?isbn={request.form['isbn']}")
+    subjects = Subjects.query.all()
+    element = []
+    for x in driver.find_elements_by_tag_name("body"):
+        element.append(x.text)
+    driver.quit()
+    text = element[0]
+    if "В РГБ найдена книга:" in text:
+        authors = text[text.find("/") + 2:text.find(". -")]
+        subject = ""
+        current_class = ""
+        if "класс" in text:
+            current_class = text[text.find("класс") - 3:text.find("класс")]
+        for i in subjects:
+            if i.name.lower() in text.lower():
+                subject = i.name
+                break
+        while authors[0] != authors[0].upper() or authors[0] == " ":
+            authors = authors[1:]
+        return jsonify({"code": "yes", "authors": authors, "subject": subject, "current_class": current_class})
     return jsonify({"code": "no"})
+
+
+@app.route('/give_book', methods=['POST'])
+def give_book():
+    changed_user = current_user
+    if not changed_user.is_authenticated:
+        return jsonify({"code": "no"})
+    current_book = All_books.query.filter_by(qr=request.form['qr']).first()
+    book = Info_about_books.query.filter_by(id_book=current_book.id_book).first()
+    username = changed_user.name
+    user = User.query.filter_by(id_user=changed_user.id_user).first()
+    subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
+    my_class = "без класса"
+    if changed_user.is_admin == 0:
+        book_class = Classes.query.filter_by(id_class=user.id_class).first()
+        my_class = str(book_class.num) + book_class.letter
+    authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
+                        [i.id_author for i in
+                         Book_authors.query.filter_by(id_book=book.id_book).all()]])
+    current_book.id_user = changed_user.id_user
+    db.session.add(current_book)
+    db.session.commit()
+    return jsonify({"code": "yes", "username": username, "subject": subject,
+                    "authors": authors, "my_class": my_class})
+
+
+@app.route('/accept_book', methods=['POST'])
+def accept_book():
+    if not current_user.is_authenticated or not (current_user.is_admin > 0):
+        return jsonify({"code": "no"})
+    current_book = All_books.query.filter_by(qr=request.form['qr']).first()
+    current_book.id_user = -1
+    db.session.add(current_book)
+    db.session.commit()
+    return jsonify({"code": "yes"})

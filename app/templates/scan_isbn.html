@@ -1,0 +1,75 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Сканировать</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+<div>
+    <br/>
+    <div style="float:left;">
+        <a class=button href="/">Назад</a>
+    </div>
+    <div style="float:right;">
+        <div>
+            <a class=button href="profile">{{ name }}</a>
+            <a class=button href="logout">Выход</a>
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+<div align="center" id="main">
+    <canvas id="canvas" width="400" height="300" style="display: none"></canvas>
+    <video id="video" width="100%" height="50%" autoplay></video>
+    <form method="post" id="my_form">
+        <input  placeholder="Предмет" class="text-size_1"/><input placeholder="Автор" class="text-size_1" />
+        <input placeholder="Класс" class="text-size_1" /><a style="color: blue; background: white;border: 1px solid black; border-radius:50%">+</a><br/><br/><br/>
+        <a class="button" onclick="document.getElementById('my_form').submit()">Добавить</a>
+    </form>
+</div>
+
+
+</body>
+<script>
+    let video = document.getElementById('video');
+    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+            video.srcObject = stream;
+            video.play();
+        });
+    }
+
+    let canvas = document.getElementById('canvas');
+    let context = canvas.getContext('2d');
+    let id_books = "";
+    let scanning = setInterval(send, 1000);
+    let last = "";
+    async function send() {
+        context.drawImage(video, 0, 0, 400, 300);
+        let path = canvas.toDataURL('image/jpeg', 0.5);
+        let formData = new FormData();
+
+        formData.append('image', path);
+        formData.append('id_books', id_books);
+		let request = await fetch('decode', {
+			method: 'POST',
+			body: formData
+        });
+        let resp = await request.json();
+        if(resp.type == "EAN13" && resp.qr != last){
+            last = resp.qr;
+            formData = new FormData();
+            formData.append('isbn', resp.qr);
+		    request = await fetch('info_isbn', {
+			    method: 'POST',
+			    body: formData
+            });
+            resp = await request.json();
+        }
+    }
+
+
+
+
+</script>
+</html>

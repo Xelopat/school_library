@@ -5,11 +5,32 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}"/>
 </head>
 <body>
-<div align="center">
+<div>
+    <br/>
+    <div style="float:left;">
+        <a class=button href="/">Назад</a>
+    </div>
+    <div style="float:right;">
+        {% if name == "" %}
+        <div>
+            <a class=button href="login">Вход</a>
+            <a class=button href="registration">Регистрация</a>
+        </div>
+        {% else %}
+        <div>
+            <a class=button href="profile">{{ name }}</a>
+            <a class=button href="logout">Выход</a>
+        </div>
+        {% endif %}
+    </div>
+    <div class="clear"></div>
+</div>
+<div align="center" id="main">
+
     <video id="video" width="100%" height="50%" autoplay></video>
-    <label id="info" class=text_size>None</label>
+    <label id="info" class=text_size>None</label><br/><br/>
     {% if is_admin == 1 %}
-        <button>Принять</button>
+        <a class="button" style="display:none" id="accept_book">Принять</a>
     {% endif %}
 </div>
 <canvas id="canvas" width="400" height="300" style="display: none"></canvas>
@@ -27,10 +48,10 @@
     let canvas = document.getElementById('canvas');
     let context = canvas.getContext('2d');
     let id_books = "";
-
+    let scanning = setInterval(send, 1000);
     async function send() {
         context.drawImage(video, 0, 0, 400, 300);
-        let path = canvas.toDataURL('image/jpeg', 1);
+        let path = canvas.toDataURL('image/jpeg', 0.5);
         let formData = new FormData();
 
         formData.append('image', path);
@@ -39,18 +60,73 @@
 			method: 'POST',
 			body: formData
         });
-        let json_req = await request.json();
-        if(json_req.code == "yes"){
-            document.getElementById("info").innerHTML = json_req.username + "(" + json_req.my_class + ")" + ": " + json_req.subject + " " + json_req.authors;
+        let resp = await request.json();
+        if(resp.type == "QRCODE"){
+            if(document.getElementById("get_book")) document.getElementById("get_book").remove();
+            document.getElementById("info").innerHTML = resp.username + "(" + resp.my_class + ")" + ": " + resp.subject + " " + resp.authors;
+            let adm = document.getElementById("accept_book");
+            if(adm){
+                adm.style="";
+                adm.setAttribute( "onClick", "javascript: accept_book('" + resp.qr + "');" );
+            }
         }
-        if(json_req.code == "no_user"){
+        if(resp.code == "no_user"){
             document.getElementById("info").innerHTML = "Пользователь отсутствует. Присвоить книгу?";
-            let button = document.createElement("button");
-            button.innerHTML = "Да";
-            document.body.append(button);
+            if(!document.getElementById("get_book")){
+                let button = document.createElement("p");
+                button.classList.add('button')
+                button.innerHTML = "Да";
+                button.id = "get_book";
+                button.setAttribute( "onClick", "javascript: get_book('" + resp.qr + "');");
+                document.getElementById("main").append(button);
+            }
+        }
+
+    }
+    async function accept_book(qr){
+        let formData = new FormData();
+
+        formData.append('qr', qr);
+		let request = await fetch('accept_book', {
+			method: 'POST',
+			body: formData
+        });
+        let resp = await request.json();
+        if(resp.code == "yes"){
+            alert("Книга принята");
+            document.getElementById("accept_book").remove();
+            document.getElementById("info").innerHTML = "Пользователь отсутствует. Присвоить книгу?";
+            if(!document.getElementById("get_book")){
+                let button = document.createElement("p");
+                button.classList.add('button')
+                button.innerHTML = "Да";
+                button.id = "get_book";
+                button.setAttribute( "onClick", "javascript: get_book('" + resp.qr + "');");
+                document.getElementById("main").append(button);
+            }
+        }
+        else{
+            alert("Ошибка");
         }
     }
-    let scanning = setInterval(send, 1000);
+    async function get_book(qr){
+        let formData = new FormData();
+        formData.append('qr', qr);
+		let request = await fetch('give_book', {
+			method: 'POST',
+			body: formData
+        });
+        let resp = await request.json();
+        if(resp.code == "yes"){
+            alert("Книга добавлена в библиотеку");
+            document.getElementById("get_book").remove();
+            document.getElementById("info").innerHTML = resp.username + "(" + resp.my_class + ")" + ": " + resp.subject + " " + resp.authors;
+        }
+        else{
+            alert("Добавлять книги могут только авторизованные пользователи");
+        }
+    }
+
 
 </script>
 </html>

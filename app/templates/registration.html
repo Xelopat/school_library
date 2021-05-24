@@ -15,12 +15,12 @@
 </div>
 <form method="POST">
     <div class=form>
-        <p>Почта: </p><input type="text" placeholder="qwerty@uiop.ru" name="email" required autocomplete="nope">
-        <p>Имя, фамилия: </p><input type="text" placeholder="Иван Иванов" name="my_name" required autocomplete="nope">
+        <p>Почта: </p><input type="email" placeholder="qwerty@uiop.ru" name="email" required>
+        <p>Имя, фамилия: </p><input type="text" placeholder="Иван Иванов" name="my_name" required>
         <p>Пароль: </p><input type="password" placeholder="password" name="password" required>
         <p>Повторите пароль: </p><input type="password" placeholder="password" name="password_1" required>
-        <p>Выберить свой класс:</p>
-        <input list="class-list" onclick="this.value=''" name="id_class" required>
+        <p id="id_class_label">Выберить свой класс:</p>
+        <input list="class-list" onclick="this.value=''" name="id_class" id="id_class" required>
         <datalist id="class-list">
             {% for current_class in classes %}
             <option id="{{ current_class[0] }}">{{ current_class[1] + current_class[2] }}</option>
@@ -36,7 +36,15 @@
         </datalist>
         <br/>
         <p style="display: inline-block;">Я админ:</p><input type="checkbox" name="is_admin"
-                              onchange="if(this.checked)alert('После регистрации ожидайте подтверждения от другого админа');"
+                              onchange="if(this.checked){alert('После регистрации ожидайте подтверждения от другого админа');
+                               document.getElementById('id_class').style='display:none';
+                               document.getElementById('id_class').required='false';
+                               document.getElementById('id_class').value='0';
+                               document.getElementById('id_class_label').style='display:none';}
+                               else{document.getElementById('id_class').style='';
+                               document.getElementById('id_class').value='';
+                               document.getElementById('id_class').required='true';
+                               document.getElementById('id_class_label').style='';}"
                               style="width:30px;height: 30px;">
         <button type="submit">Регистрация</button>
         <br>
