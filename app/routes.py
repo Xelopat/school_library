@@ -122,29 +122,31 @@ def scan_book():
 @app.route('/scan_isbn', methods=['POST', 'GET'])
 def scan_isbn():
     if request.method == "POST":
-        authors = request.form['authors'].replace(' ', '').split(",")
+        authors = request.form['authors'].replace(" ", "").split(",")
         current_class = request.form['current_class']
         subject = request.form['subject']
         if not Info_about_books.query.filter_by(isbn=request.form['isbn']).first():
             if 12 > int(current_class) > 0:
                 is_subject = Subjects.query.filter_by(name=subject).first()
-                if is_subject:
-                    for author in authors:
-                        is_author = Authors.query.filter_by(name=author).first()
-                        if not is_author:
-                            db.session.add(Authors(author))
-                else:
-                    db.session.add(Subjects(subject))
+                if not is_subject:
+                    db.session.add(Subjects(name=subject))
+                for author in authors:
+                    is_author = Authors.query.filter_by(name=author).first()
+                    if not is_author:
+                        db.session.add(Authors(name=author))
             else:
                 return jsonify({"code": "class_error"})
             db.session.commit()
-            db.session.add(Info_about_books(subject=Subjects.query.filter_by(name=subject).first().id_subject,
-                                            num_class=current_class, isbn=request.form['isbn']))
-            db.session.commit()
+            append_book = Info_about_books(id_subject=Subjects.query.filter_by(name=subject).first().id_subject,
+                                           num_class=current_class, isbn=request.form['isbn'])
+            db.session.add(append_book)
+            db.session.flush()
             for author in authors:
-                db.session.add(Book_authors())
+                db.session.add(Book_authors(id_author=Authors.query.filter_by(name=author).first().id_author,
+                                            id_book=append_book.id_book))
         else:
             return jsonify({"code": "in_base"})
+        db.session.commit()
     is_admin = 0
     name = ""
     if current_user.is_authenticated:
@@ -212,8 +214,18 @@ def info_isbn():
             if i.name.lower() in text.lower():
                 subject = i.name
                 break
+        i = 0
+        while not authors[i].isalpha():
+            i += 1
+        authors = authors[i:]
         while authors[0] != authors[0].upper() or authors[0] == " ":
             authors = authors[1:]
+        i = 0
+        while i != len(authors):
+            if authors[i] == " " and authors[i + 1].islower():
+                authors = authors[0:i]
+                break
+            i += 1
         return jsonify(
             {"code": "yes", "authors": authors, "subject": subject, "class": current_class, "qr": request.form['isbn']})
     return jsonify({"code": "no"})

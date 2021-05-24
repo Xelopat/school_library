@@ -1,3 +1,6 @@
+body{
+    background-image: url(static/img/wood.jpg);
+}
 @media (min-width: 576px) {
     .clear {clear: both;}
     .button {
