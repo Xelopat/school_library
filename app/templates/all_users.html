@@ -20,14 +20,25 @@
     </div>
     <div class="clear"></div>
 </div>
-
 <div align="center">
+    <input list="class-list" value="{{ book_class }}" onclick="this.value=''" onchange="reload(this.value)"
+           id="current_class" style="width: 140px; margin-top: 8%;" class="input_size">
+    <datalist id="class-list">
+        {% for current in all_classes %}
+        <option id="{{ current[0] }}" value="{{ current[1] }}">
+            {% endfor %}
+    </datalist>
+</div>
+
+<div align="center" style="margin-top:7%">
     {% if users %}
     <table cellspacing="15" align="center" class="table">
         {% for current in users %}
         <tr>
             <td> {{ current[0] }}</td>
-            <td> {{ current[1] }}</td>
+            <td>
+                <button style="width: 150px; height: 40px; color: blue" onclick="location = 'user?id_user={{ current[1] }}'">Просмотр</button>
+            </td>
         </tr>
         {% endfor %}
     </table>
@@ -40,10 +51,12 @@
         let current = document.getElementById("class-list").options;
         for (let i = 0; i < current.length; i++) {
             if(val == current[i].value){
-                location = "view_books?selected_class=" + current[i].id;
+                location = "all_users?selected_class=" + current[i].id;
                 return 0;
             }
         }
         alert("Данного класса нет в базе");
     }
+
+
 </script>

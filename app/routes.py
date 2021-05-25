@@ -52,7 +52,8 @@ def registration():
             is_admin = 0
             if "is_admin" in request.form and request.form['is_admin'] == "on":
                 is_admin = -1
-            all_classes = [[i.id_class, "".join([str(i.num), i.letter])] for i in Classes.query.all()]
+            classes_t = Classes.query.all()
+            all_classes = [[i.id_class, "".join([str(i.num), i.letter])] for i in classes_t]
             id_class = 0
             for i in all_classes:
                 if i[1] == request.form['id_class']:
@@ -97,8 +98,9 @@ def view_books():
     book_class = str(book_class.num) + book_class.letter
     for current in my_class_books.all():
         book = Info_about_books.query.filter_by(id_book=current.id_book).first()
+        books_author = Book_authors.query.filter_by(id_book=current.id_book).all()
         authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
-                            [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
+                            [i.id_author for i in books_author]])
         subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
         id_user = 0
         if current_user.is_authenticated:
@@ -143,8 +145,9 @@ def view_books_edit():
 
     for current in my_class_books.all():
         book = Info_about_books.query.filter_by(id_book=current.id_book).first()
+        books_author = Book_authors.query.filter_by(id_book=current.id_book).all()
         authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
-                            [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
+                            [i.id_author for i in books_author]])
         subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
         alr.append(book.id_book)
         books.append([authors, subject, book.id_book])
@@ -261,8 +264,7 @@ def info_isbn():
     text = element[0]
     if "В РГБ найдена книга:" in text:
         text = text[text.find(":") + 1:]
-        authors = text[text.find("/") + 2:text.find(". -") - 1]
-        subject = ""
+        authors = text[text.find("/") + 2:text.find(". -")]
         current_class = 0
         print(text)
         if "класс" in text:
@@ -284,10 +286,9 @@ def info_isbn():
         i = 0
         while i != len(authors):
             if authors[i] == " " and authors[i + 1].islower():
-                authors = authors[0:i]
+                authors = authors[0:i + 1]
                 break
             i += 1
-        print(request.form['isbn'])
         return jsonify(
             {"code": "yes", "authors": authors, "subject": subject, "class": current_class, "qr": request.form['isbn']})
     return jsonify({"code": "no", "qr": request.form['isbn']})
@@ -307,9 +308,9 @@ def give_book():
     if changed_user.is_admin == 0:
         book_class = Classes.query.filter_by(id_class=user.id_class).first()
         my_class = str(book_class.num) + book_class.letter
+    book_author = Book_authors.query.filter_by(id_book=book.id_book).all()
     authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
-                        [i.id_author for i in
-                         Book_authors.query.filter_by(id_book=book.id_book).all()]])
+                        [i.id_author for i in book_author]])
     current_book.id_user = changed_user.id_user
     db.session.add(current_book)
     db.session.commit()
@@ -328,7 +329,7 @@ def accept_book():
     return jsonify({"code": "yes"})
 
 
-@app.route('/all_users', methods=['POST, GET'])
+@app.route('/all_users')
 def all_users():
     is_admin = 0
     name = ""
@@ -339,10 +340,45 @@ def all_users():
             return redirect(url_for('index'))
     if is_admin != 1:
         return redirect(url_for('index'))
+    if current_user.is_authenticated:
+        name = current_user.name
+    id_class = 1
+    if request.args.get('selected_class'):
+        id_class = request.args.get('selected_class')
+    current_class = Classes.query.filter_by(id_class=id_class).first()
+    book_class = str(current_class.num) + current_class.letter
+    users = User.query.filter_by(id_school=current_user.id_school, id_class=id_class).all()
+    users_mas = [[i.name, i.id_user] for i in users]
+    classes_t = Classes.query.all()
+    all_classes = [[i.id_class, "".join([str(i.num), i.letter])] for i in classes_t]
+    return render_template('all_users.html', users=users_mas, name=name, all_classes=all_classes, book_class=book_class)
 
-    users = User.query.filter_by(id_school=current_user.id_school).all()
-    users_mas = []
-    for current in users:
-        users_mas.append([Classes.query.filter_by(id_class=current.id_class).first().name, current.name])
 
-    return render_template('all_users.html', users=users_mas)
+@app.route('/user', methods=['POST', 'GET'])
+def user():
+    if request.method == "POST":
+        all_b = All_books.query.filter_by(id_all_books=request.form['remove']).first()
+        all_b.id_user = -1
+        db.session.add(all_b)
+        db.session.commit()
+    is_admin = 0
+    name = ""
+    if current_user.is_authenticated:
+        is_admin = current_user.is_admin
+        name = current_user.name
+        if is_admin != 1:
+            return redirect(url_for('index'))
+    if is_admin != 1:
+        return redirect(url_for('index'))
+    if current_user.is_authenticated:
+        name = current_user.name
+    id_user = request.args.get('id_user')
+    books = All_books.query.filter_by(id_user=id_user).all()
+    all_books = [[i.id_all_books, " ".join([Authors.query.filter_by(id_author=j.id_author).first().name for j in
+                              Book_authors.query.filter_by(id_book=i.id_book).all()]),
+                  Subjects.query.filter_by(
+                      id_subject=Info_about_books.query.filter_by(id_book=i.id_book).first().id_subject).first().name,
+                  Info_about_books.query.filter_by(id_book=i.id_book).first().num_class]
+                 for i in
+                 books]
+    return render_template('user.html', name=name, books=all_books)

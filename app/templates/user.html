@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Список книг</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}"/>
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+</head>
+<body>
+<div>
+    <br/>
+    <div style="float:left;">
+        <a class=button href="/">Назад</a>
+    </div>
+    <div style="float:right;">
+        <div>
+            <a class=button href="profile">{{ name }}</a>
+            <a class=button href="logout">Выход</a>
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+
+<div align="center">
+    {% if books %}
+    <table cellspacing="15" align="center" class="table">
+        {% for current in books %}
+        <tr>
+            <td> {{ current[2] }}</td>
+            <td> {{ current[1] }}</td>
+            <td> {{ current[3] }}</td>
+            <td><form method="post"><input style="display:none;" name="remove" value="{{ current[0] }}"><button align="center" type="submit" value="submit" >&#10060;</button></form></td>
+
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</div>
+</body>
+</html>
