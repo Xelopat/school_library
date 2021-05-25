@@ -121,6 +121,15 @@ def scan_book():
 
 @app.route('/scan_isbn', methods=['POST', 'GET'])
 def scan_isbn():
+    is_admin = 0
+    name = ""
+    if current_user.is_authenticated:
+        is_admin = current_user.is_admin
+        name = current_user.name
+        if is_admin != 1:
+            return redirect(url_for('index'))
+    if is_admin != 1:
+        return redirect(url_for('index'))
     if request.method == "POST":
         authors = request.form['authors'].replace(" ", "").split(",")
         current_class = request.form['current_class']
@@ -135,7 +144,8 @@ def scan_isbn():
                     if not is_author:
                         db.session.add(Authors(name=author))
             else:
-                return jsonify({"code": "class_error"})
+                return render_template('scan_isbn.html', is_admin=is_admin, name=name,
+                                       error="Введён некорректный класс")
             db.session.commit()
             append_book = Info_about_books(id_subject=Subjects.query.filter_by(name=subject).first().id_subject,
                                            num_class=current_class, isbn=request.form['isbn'])
@@ -145,18 +155,9 @@ def scan_isbn():
                 db.session.add(Book_authors(id_author=Authors.query.filter_by(name=author).first().id_author,
                                             id_book=append_book.id_book))
         else:
-            return jsonify({"code": "in_base"})
+            return render_template('scan_isbn.html', is_admin=is_admin, name=name, error="Книга уже есть в базе")
         db.session.commit()
-    is_admin = 0
-    name = ""
-    if current_user.is_authenticated:
-        is_admin = current_user.is_admin
-        name = current_user.name
-        if is_admin != 1:
-            return redirect(url_for('index'))
-    if is_admin != 1:
-        return redirect(url_for('index'))
-    return render_template('scan_isbn.html', is_admin=is_admin, name=name)
+    return render_template('scan_isbn.html', is_admin=is_admin, name=name, error="")
 
 
 @app.route('/decode', methods=['POST'])
@@ -196,7 +197,9 @@ def decode():
 
 @app.route('/info_isbn', methods=['POST'])
 def info_isbn():
-    driver = webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+    options.add_argument('headless')
+    driver = webdriver.Chrome(options=options)
     driver.get(f"https://www.triumph.ru/html/serv/find-isbn.php?isbn={request.form['isbn']}")
     subjects = Subjects.query.all()
     element = []

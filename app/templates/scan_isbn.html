@@ -6,7 +6,11 @@
     <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
 </head>
 <body>
+{% if error != "" %}
+<script>alert('{{ error }}')</script>
+{% endif %}
 <div>
+
     <br/>
     <div style="float:left;">
         <a class=button href="/">Назад</a>
@@ -23,8 +27,11 @@
     <canvas id="canvas" width="400" height="300" style="display: none"></canvas>
     <video id="video" width="100%" height="50%" autoplay></video>
     <form method="post" id="my_form">
-        <input required autocomplete="off" placeholder="Предмет" class="input_size" id="subject" name="subject" /><input required autocomplete="off" placeholder="Автор1, Автор2" class="input_size" id="author" name="authors"/>
-        <input required autocomplete="off" placeholder="Класс" class="input_size" id="class" name="current_class" type="number" /><input autocomplete="off" placeholder="ISBN" class="input_size" id="isbn" name="isbn" type="number" />
+        <input required autocomplete="off" placeholder="Предмет" class="input_size" id="subject" name="subject"/><input
+            required autocomplete="off" placeholder="Автор1, Автор2" class="input_size" id="author" name="authors"/>
+        <input required autocomplete="off" placeholder="Класс" class="input_size" id="class" name="current_class"
+               type="number"/><input autocomplete="off" placeholder="ISBN" class="input_size" id="isbn" name="isbn"
+                                     type="number"/>
         <br/><br/><br/><a class="button" onclick="document.getElementById('my_form').submit()">Добавить</a>
     </form>
 </div>
@@ -72,6 +79,7 @@
             document.getElementById("isbn").value = resp.qr;
         }
     }
+
 
 
 
