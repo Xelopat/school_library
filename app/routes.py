@@ -108,6 +108,37 @@ def view_books():
     return render_template('view_books.html', books=books, all_classes=all_classes, name=name)
 
 
+@app.route('/view_books_edit')
+def view_books_edit():
+    is_admin = 0
+    name = ""
+    if current_user.is_authenticated:
+        is_admin = current_user.is_admin
+        name = current_user.name
+        if is_admin != 1:
+            return redirect(url_for('index'))
+    if is_admin != 1:
+        return redirect(url_for('index'))
+    books = []
+    id_class = 1
+    if request.args.get('selected_class'):
+        id_class = request.args.get('selected_class')
+
+    my_class_books = Class_books.query.filter_by(id_class=id_class)
+    all_classes = [[i.id_class, "".join([str(i.num), i.letter])] for i in Classes.query.all()]
+    book_class = Classes.query.filter_by(id_class=id_class).first()
+    book_class = str(book_class.num) + book_class.letter
+    for current in my_class_books.all():
+        book = Info_about_books.query.filter_by(id_book=current.id_book).first()
+        authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
+                            [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
+        subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
+        books.append([book_class, authors, subject])
+    if not books:
+        books = [[book_class, "книг", "нет"]]
+    return render_template('view_books.html', books=books, all_classes=all_classes, name=name)
+
+
 @app.route('/scan_book')
 def scan_book():
     is_admin = 0

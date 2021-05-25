@@ -13,17 +13,10 @@
         <a class=button href="/">Назад</a>
     </div>
     <div style="float:right;">
-        {% if name == "" %}
-        <div>
-            <a class=button href="login">Вход</a>
-            <a class=button href="registration">Регистрация</a>
-        </div>
-        {% else %}
         <div>
             <a class=button href="profile">{{ name }}</a>
             <a class=button href="logout">Выход</a>
         </div>
-        {% endif %}
     </div>
     <div class="clear"></div>
 </div>
