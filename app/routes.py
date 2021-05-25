@@ -104,8 +104,17 @@ def view_books():
     return render_template('view_books.html', books=books, all_classes=all_classes, name=name, book_class=book_class)
 
 
-@app.route('/view_books_edit')
+@app.route('/view_books_edit', methods=['GET', 'POST'])
 def view_books_edit():
+    if request.method == "POST":
+        if 'book' in request.form:
+            id_class = request.args.get("selected_class")
+            db.session.add(Class_books(id_book=request.form['book'], id_class=id_class))
+            db.session.commit()
+        else:
+            id_class = request.args.get("selected_class")
+            db.session.delete(Class_books.query.filter_by(id_book=request.form['remove'], id_class=id_class).first())
+            db.session.commit()
     is_admin = 0
     name = ""
     if current_user.is_authenticated:
@@ -124,20 +133,24 @@ def view_books_edit():
     my_class_books = Class_books.query.filter_by(id_class=id_class)
     all_classes = [[i.id_class, "".join([str(i.num), i.letter])] for i in Classes.query.all()]
     book_class = Classes.query.filter_by(id_class=id_class).first()
+    num_class = book_class.num
     book_class = str(book_class.num) + book_class.letter
+    alr = []
     for current in my_class_books.all():
         book = Info_about_books.query.filter_by(id_book=current.id_book).first()
         authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
                             [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
         subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
-        books.append([authors, subject])
+        alr.append(book.id_book)
+        books.append([authors, subject, book.id_book])
 
-    for current in Info_about_books.query.all():
-        book = Info_about_books.query.filter_by(id_book=current.id_book).first()
-        authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
-                            [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
-        subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
-        all_books.append([book.id_book, subject + ": " + authors + " - " + book_class])
+    for current in Info_about_books.query.filter_by(num_class=num_class).all():
+        if not (current.id_book in alr):
+            book = Info_about_books.query.filter_by(id_book=current.id_book).first()
+            authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
+                                [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
+            subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
+            all_books.append([book.id_book, subject + ": " + authors + " - " + book_class])
     return render_template('view_books_edit.html', books=books, all_classes=all_classes, name=name, all_books=all_books,
                            book_class=book_class)
 

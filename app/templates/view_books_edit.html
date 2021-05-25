@@ -23,7 +23,7 @@
 
 <div align="center">
     <input list="class-list" value="{{ book_class }}" onclick="this.value=''" onchange="reload(this.value)"
-           id="current_class" style="width: 140px; margin-top: 8%;" class="input_size">
+           id="current_class" style="width: 140px; margin-top: 3%;" class="input_size">
     <datalist id="class-list">
         {% for current in all_classes %}
         <option id="{{ current[0] }}" value="{{ current[1] }}">
@@ -36,17 +36,19 @@
             <td>{{ book_class }}</td>
             <td> {{ current[0] }}</td>
             <td> {{ current[1] }}</td>
+            <td><form method="post"><input style="display:none;" name="remove" value="{{ current[2] }}"><button align="center" type="submit" value="submit" >&#10060;</button></form></td>
         </tr>
         {% endfor %}
     </table>
-    <input list="book-list" onclick="this.value=''" id="current_book"
-           class="input_size" width="60%">
-    <datalist id="book-list">
-        {% for current1 in all_books %}
-        <option id="{{ current1[0] }}" value="{{ current1[1] }}">
+    <form method="POST">
+        <select id="book-list" class="input_size" name="book">
+            {% for current1 in all_books %}
+            <option value="{{ current1[0] }}">{{ current1[1] }}</option>
             {% endfor %}
-    </datalist><br/>
-    <button>Добавить в класс</button>
+        </select><br/><br/><br/>
+        <button style="color: green; height: 50px; width: 150px; font-size: 20px" type="submit">Добавить в класс
+        </button>
+    </form>
 </div>
 
 </body>
@@ -56,17 +58,10 @@
         let current = document.getElementById("class-list").options;
         for (let i = 0; i < current.length; i++) {
             if(val == current[i].value){
-                location = "view_books?selected_class=" + current[i].id;
+                location = "view_books_edit?selected_class=" + current[i].id;
                 return 0;
             }
         }
         alert("Данного класса нет в базе");
     }
-
-
-
-
-
-
-
 </script>
