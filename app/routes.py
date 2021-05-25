@@ -141,6 +141,8 @@ def view_books_edit():
                             [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
         subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
         all_books.append(subject + authors + book_class)
+    if not books:
+        books = [[book_class, "книг", "нет"]]
     return render_template('view_books.html', books=books, all_classes=all_classes, name=name, all_books=all_books)
 
 
