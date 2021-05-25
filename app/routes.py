@@ -1,16 +1,15 @@
 import base64
-import io
+
 from io import BytesIO
 
-import qrcode
 from PIL import Image
 from flask import render_template, redirect, request, url_for, flash, jsonify
 import pyzbar.pyzbar as zbar
 from selenium import webdriver
-from sqlalchemy import func
+
 
 from app import app, db
-from flask_login import current_user, login_user, logout_user, login_required
+from flask_login import current_user, login_user, logout_user
 from app.models import User, All_books, Classes, Subjects, Authors, Book_authors, Class_books, Schools, \
     Info_about_books
 
@@ -120,6 +119,7 @@ def view_books_edit():
     if is_admin != 1:
         return redirect(url_for('index'))
     books = []
+    all_books = []
     id_class = 1
     if request.args.get('selected_class'):
         id_class = request.args.get('selected_class')
@@ -134,9 +134,14 @@ def view_books_edit():
                             [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
         subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
         books.append([book_class, authors, subject])
-    if not books:
-        books = [[book_class, "книг", "нет"]]
-    return render_template('view_books.html', books=books, all_classes=all_classes, name=name)
+
+    for current in Info_about_books.query.all():
+        book = Info_about_books.query.filter_by(id_book=current.id_book).first()
+        authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
+                            [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
+        subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
+        all_books.append(subject + authors + book_class)
+    return render_template('view_books.html', books=books, all_classes=all_classes, name=name, all_books=all_books)
 
 
 @app.route('/scan_book')
