@@ -29,7 +29,7 @@
 </div>
 
 <div align="center">
-    <input list="class-list" value="{{ books[0][0] }}" onclick="this.value=''" onchange="reload(this.value)"
+    <input list="class-list" value="{{ book_class }}" onclick="this.value=''" onchange="reload(this.value)"
            id="current_class" style="width: 140px; margin-top: 8%;" class="input_size">
     <datalist id="class-list">
         {% for current in all_classes %}
@@ -40,9 +40,9 @@
     <table cellspacing="15" align="center" class="table">
         {% for current in books %}
         <tr>
-            <td>{{ current[0] }}</td>
+            <td>{{ book_class }}</td>
+            <td> {{ current[0] }}</td>
             <td> {{ current[1] }}</td>
-            <td> {{ current[2] }}</td>
         </tr>
         {% endfor %}
     </table>

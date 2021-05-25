@@ -7,7 +7,6 @@ from flask import render_template, redirect, request, url_for, flash, jsonify
 import pyzbar.pyzbar as zbar
 from selenium import webdriver
 
-
 from app import app, db
 from flask_login import current_user, login_user, logout_user
 from app.models import User, All_books, Classes, Subjects, Authors, Book_authors, Class_books, Schools, \
@@ -102,9 +101,7 @@ def view_books():
                             [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
         subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
         books.append([book_class, authors, subject])
-    if not books:
-        books = [[book_class, "книг", "нет"]]
-    return render_template('view_books.html', books=books, all_classes=all_classes, name=name)
+    return render_template('view_books.html', books=books, all_classes=all_classes, name=name, book_class=book_class)
 
 
 @app.route('/view_books_edit')
@@ -133,15 +130,16 @@ def view_books_edit():
         authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
                             [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
         subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
-        books.append([book_class, authors, subject])
+        books.append([authors, subject])
 
     for current in Info_about_books.query.all():
         book = Info_about_books.query.filter_by(id_book=current.id_book).first()
         authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
                             [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
         subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
-        all_books.append([book.id_book, subject + authors + book_class])
-    return render_template('view_books.html', books=books, all_classes=all_classes, name=name, all_books=all_books)
+        all_books.append([book.id_book, subject + ": " + authors + " - " + book_class])
+    return render_template('view_books_edit.html', books=books, all_classes=all_classes, name=name, all_books=all_books,
+                           book_class=book_class)
 
 
 @app.route('/scan_book')
