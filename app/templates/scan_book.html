@@ -27,11 +27,10 @@
     <div class="clear"></div>
 </div>
 <div align="center" id="main">
-
     <video id="video" width="100%" height="50%" autoplay></video>
     <label id="info" class=text_size>None</label><br/><br/>
     {% if is_admin == 1 %}
-        <a class="button" style="display:none" id="accept_book">Принять</a>
+    <a style="display:none" class="button" id="accept_book" >Принять книгу</a>
     {% endif %}
 </div>
 <canvas id="canvas" width="400" height="300" style="display: none"></canvas>
@@ -63,26 +62,46 @@
         });
         let resp = await request.json();
         if(resp.type == "QRCODE"){
+
+            video.pause();
+            clearInterval(scanning);
             if(document.getElementById("get_book")) document.getElementById("get_book").remove();
             document.getElementById("info").innerHTML = resp.username + "(" + resp.my_class + ")" + ": " + resp.subject + " " + resp.authors;
             let adm = document.getElementById("accept_book");
-            if(adm){
-                adm.style="";
-                adm.setAttribute( "onClick", "javascript: accept_book('" + resp.qr + "');" );
+            if(resp.code == "no_user"){
+                document.getElementById("info").innerHTML = "Пользователь отсутствует. Присвоить книгу?";
+                if(!document.getElementById("get_book")){
+                    let button = document.createElement("p");
+                    button.classList.add('button')
+                    button.innerHTML = "Да";
+                    button.id = "get_book";
+                    button.setAttribute( "onClick", "javascript: get_book('" + resp.qr + "');");
+                    document.getElementById("main").append(button);
+                }
             }
-        }
-        if(resp.code == "no_user"){
-            document.getElementById("info").innerHTML = "Пользователь отсутствует. Присвоить книгу?";
-            if(!document.getElementById("get_book")){
+            else{
+                if(adm){
+                    adm.style="";
+                    adm.setAttribute( "onClick", "javascript: accept_book('" + resp.qr + "');" );
+                }
+            }
+            if(!document.getElementById("scan_again")){
                 let button = document.createElement("p");
                 button.classList.add('button')
-                button.innerHTML = "Да";
-                button.id = "get_book";
-                button.setAttribute( "onClick", "javascript: get_book('" + resp.qr + "');");
+                button.innerHTML = "Повторный скан";
+                button.id = "scan_again";
+                button.setAttribute( "onClick", "javascript: scan();");
                 document.getElementById("main").append(button);
             }
         }
 
+    }
+    function scan(){
+        document.getElementById("scan_again").remove();
+        if(document.getElementById("get_book")) document.getElementById("get_book").remove();
+        document.getElementById("info").innerHTML = "None";
+        scanning = setInterval(send, 1000);
+        video.play()
     }
     async function accept_book(qr){
         let formData = new FormData();
@@ -95,16 +114,7 @@
         let resp = await request.json();
         if(resp.code == "yes"){
             alert("Книга принята");
-            document.getElementById("accept_book").remove();
-            document.getElementById("info").innerHTML = "Пользователь отсутствует. Присвоить книгу?";
-            if(!document.getElementById("get_book")){
-                let button = document.createElement("p");
-                button.classList.add('button')
-                button.innerHTML = "Да";
-                button.id = "get_book";
-                button.setAttribute( "onClick", "javascript: get_book('" + resp.qr + "');");
-                document.getElementById("main").append(button);
-            }
+            location.reload();
         }
         else{
             alert("Ошибка");
@@ -127,7 +137,5 @@
             alert("Добавлять книги могут только авторизованные пользователи");
         }
     }
-
-
 </script>
 </html>

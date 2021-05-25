@@ -1,5 +1,5 @@
 body{
-    background-image: url(static/img/wood.jpg);
+    background-image: url(wood.jpg);
 }
 @media (min-width: 576px) {
     .clear {clear: both;}
@@ -28,6 +28,7 @@ body{
       color: #ffdead;
       box-shadow: inset #ebab00 0 -1px 1px, inset 0 1px 1px #ffbf00, #cc7722 0 0 0 1px, 0 10px 10px -9px #000;
     }
+
     .input_size{
         border-radius: 8px;
     	border-width: 1px;

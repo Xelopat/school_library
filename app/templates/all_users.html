@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Список книг</title>
+    <title>Все пользователи</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}"/>
     <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
 </head>
@@ -13,40 +13,21 @@
         <a class=button href="/">Назад</a>
     </div>
     <div style="float:right;">
-        {% if name == "" %}
-        <div>
-            <a class=button href="login">Вход</a>
-            <a class=button href="registration">Регистрация</a>
-        </div>
-        {% else %}
         <div>
             <a class=button href="profile">{{ name }}</a>
             <a class=button href="logout">Выход</a>
         </div>
-        {% endif %}
     </div>
     <div class="clear"></div>
 </div>
 
 <div align="center">
-    <input list="class-list" value="{{ book_class }}" onclick="this.value=''" onchange="reload(this.value)"
-           id="current_class" style="width: 140px; margin-top: 8%;" class="input_size">
-    <datalist id="class-list">
-        {% for current in all_classes %}
-        <option id="{{ current[0] }}" value="{{ current[1] }}">
-            {% endfor %}
-    </datalist>
-    {% if books %}
+    {% if users %}
     <table cellspacing="15" align="center" class="table">
-        {% for current in books %}
+        {% for current in users %}
         <tr>
-            <td> {{ current[1] }}</td>
             <td> {{ current[0] }}</td>
-            {% if current[2] %}
-            <td>✅</td>
-            {% else %}
-            <td>&#10060;</td>
-            {% endif %}
+            <td> {{ current[1] }}</td>
         </tr>
         {% endfor %}
     </table>

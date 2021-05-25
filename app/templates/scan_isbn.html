@@ -65,6 +65,8 @@
         });
         let resp = await request.json();
         if(resp.type == "EAN13" && resp.qr != last){
+            clearInterval(scanning);
+            video.pause();;
             last = resp.qr;
             formData = new FormData();
             formData.append('isbn', resp.qr);
@@ -77,12 +79,8 @@
             document.getElementById("subject").value = resp.subject;
             document.getElementById("class").value = resp.class;
             document.getElementById("isbn").value = resp.qr;
+
         }
     }
-
-
-
-
-
 </script>
 </html>

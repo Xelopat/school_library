@@ -100,7 +100,11 @@ def view_books():
         authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
                             [i.id_author for i in Book_authors.query.filter_by(id_book=current.id_book).all()]])
         subject = Subjects.query.filter_by(id_subject=book.id_subject).first().name
-        books.append([book_class, authors, subject])
+        id_user = 0
+        if current_user.is_authenticated:
+            id_user = current_user.id_user
+        have = (All_books.query.filter_by(id_book=current.id_book, id_user=id_user).first() is not None)
+        books.append([authors, subject, have])
     return render_template('view_books.html', books=books, all_classes=all_classes, name=name, book_class=book_class)
 
 
@@ -136,6 +140,7 @@ def view_books_edit():
     num_class = book_class.num
     book_class = str(book_class.num) + book_class.letter
     alr = []
+
     for current in my_class_books.all():
         book = Info_about_books.query.filter_by(id_book=current.id_book).first()
         authors = " ".join([Authors.query.filter_by(id_author=j).first().name for j in
@@ -255,11 +260,17 @@ def info_isbn():
     driver.quit()
     text = element[0]
     if "В РГБ найдена книга:" in text:
-        authors = text[text.find("/") + 2:text.find(". -")]
+        text = text[text.find(":") + 1:]
+        authors = text[text.find("/") + 2:text.find(". -") - 1]
         subject = ""
-        current_class = ""
+        current_class = 0
+        print(text)
         if "класс" in text:
-            current_class = text[text.find("класс") - 3:text.find("класс")]
+            try:
+                current_class = int(text[text.find("класс") - 3:text.find("класс")])
+            except:
+                pass
+        subject = text[:text.find(".")]
         for i in subjects:
             if i.name.lower() in text.lower():
                 subject = i.name
@@ -276,9 +287,10 @@ def info_isbn():
                 authors = authors[0:i]
                 break
             i += 1
+        print(request.form['isbn'])
         return jsonify(
             {"code": "yes", "authors": authors, "subject": subject, "class": current_class, "qr": request.form['isbn']})
-    return jsonify({"code": "no"})
+    return jsonify({"code": "no", "qr": request.form['isbn']})
 
 
 @app.route('/give_book', methods=['POST'])
@@ -314,3 +326,23 @@ def accept_book():
     db.session.add(current_book)
     db.session.commit()
     return jsonify({"code": "yes"})
+
+
+@app.route('/all_users', methods=['POST, GET'])
+def all_users():
+    is_admin = 0
+    name = ""
+    if current_user.is_authenticated:
+        is_admin = current_user.is_admin
+        name = current_user.name
+        if is_admin != 1:
+            return redirect(url_for('index'))
+    if is_admin != 1:
+        return redirect(url_for('index'))
+
+    users = User.query.filter_by(id_school=current_user.id_school).all()
+    users_mas = []
+    for current in users:
+        users_mas.append([Classes.query.filter_by(id_class=current.id_class).first().name, current.name])
+
+    return render_template('all_users.html', users=users_mas)

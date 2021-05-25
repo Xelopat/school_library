@@ -29,17 +29,18 @@
         <option id="{{ current[0] }}" value="{{ current[1] }}">
             {% endfor %}
     </datalist>
-
+    {% if books %}
     <table cellspacing="15" align="center" class="table" id="books_table">
         {% for current in books %}
         <tr>
-            <td>{{ book_class }}</td>
-            <td> {{ current[0] }}</td>
             <td> {{ current[1] }}</td>
+            <td> {{ current[0] }}</td>
             <td><form method="post"><input style="display:none;" name="remove" value="{{ current[2] }}"><button align="center" type="submit" value="submit" >&#10060;</button></form></td>
         </tr>
         {% endfor %}
     </table>
+    {% endif %}
+    {% if all_books %}
     <form method="POST">
         <select id="book-list" class="input_size" name="book">
             {% for current1 in all_books %}
@@ -49,6 +50,7 @@
         <button style="color: green; height: 50px; width: 150px; font-size: 20px" type="submit">Добавить в класс
         </button>
     </form>
+    {% endif %}
 </div>
 
 </body>
