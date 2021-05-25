@@ -39,13 +39,15 @@
         </tr>
         {% endfor %}
     </table>
-    <input list="book-list" onclick="this.value=''" id="current_book" style="width: 140px; margin-top: 8%;" class="input_size">
-    <datalist id="book-list">
-        {% for current1 in all_books %}
-        <option id="{{ current1[0] }}" value="{{ current1[1] }}">
-            {% endfor %}
-    </datalist>
+
 </div>
+<input list="book-list" onclick="this.value=''" id="current_book" style="width: 140px; margin-top: 8%;"
+       class="input_size">
+<datalist id="book-list">
+    {% for current1 in all_books %}
+    <option id="{{ current1[0] }}" value="{{ current1[1] }}">
+        {% endfor %}
+</datalist>
 </body>
 </html>
 <script>
@@ -59,6 +61,7 @@
         }
         alert("Данного класса нет в базе");
     }
+
 
 
 
